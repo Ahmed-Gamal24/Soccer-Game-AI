@@ -1,0 +1,50 @@
+{
+    "tasks": [
+        {
+            "type": "cppbuild",
+            "label": "C/C++: g++.exe SDL Test Build",
+            "command": "C:\\msys64\\mingw64\\bin\\g++.exe",
+            "args": [
+                "-fdiagnostics-color=always",
+                "-g",
+                
+                // --- 1. Include Directories (-I flag) ---
+                "-I", "${workspaceFolder}/SDL3-3.2.26/include",
+                
+                // --- 2. Source File to Compile (Active File Only) ---
+                "${workspaceFolder}/main.cpp",
+                "${workspaceFolder}/soccerPitch.cpp",
+                "${workspaceFolder}/vector2d.cpp",
+                "${workspaceFolder}/goal.cpp",
+                "${workspaceFolder}/boundryWall.cpp",
+                "${workspaceFolder}/baseGameEntity.cpp",
+                "${workspaceFolder}/fieldPlayer.cpp",
+                "${workspaceFolder}/movingEntity.cpp",
+                "${workspaceFolder}/playerBase.cpp",
+                "${workspaceFolder}/soccerBall.cpp",
+                "${workspaceFolder}/region.cpp",
+                
+                // --- 3. Output Flag ---
+                "-o", "${workspaceFolder}/build/main.exe",
+                
+                // --- 4. Library Paths (-L flag) ---
+                "-L", "${workspaceFolder}/SDL3-3.2.26/lib/x64",
+                
+                // --- 5. Link Libraries (-l flag) ---
+                "-lSDL3",
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "problemMatcher": [
+                "$gcc"
+            ],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "detail": "VSCode compiles and runs only the active file for quick SDL testing."
+        }
+    ],
+    "version": "2.0.0"
+}

@@ -1,0 +1,7 @@
+baseGameEntity
+    - movingEntity
+        - playerBase
+            - fieldPlayer
+            - goalKeeper
+        - soccerBall
+    - goal
