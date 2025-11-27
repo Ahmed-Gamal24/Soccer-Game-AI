@@ -45,13 +45,14 @@ public:
     inline clsVector2d perp()const;
 
     //adjusts x and y so that the length of the vector does not exceed max
-    void Truncate(double max);
-
-    //returns the distance between this vector and the one passed as a parameter
-    inline double Distance(const clsVector2d &v2)const;
+    void truncate(double max);
 
     //squared version of above
-    inline double DistanceSq(const clsVector2d &v2)const;
+    inline double distanceSq(const clsVector2d &v2)const;
+    
+    //returns the distance between this vector and the one passed as a parameter
+    inline double distance(const clsVector2d &v2)const;
+
 
     //returns the vector that is the reverse of this vector
     inline clsVector2d GetReverse()const;

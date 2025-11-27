@@ -1,7 +1,17 @@
 #pragma once 
 
+#include"playerBase.h"
 #include"fieldPlayer.h"
 #include"goalKeeper.h"
+
+
+struct SupportSpot
+{
+    clsVector2d pos;
+    double score;//we should choose the supporting spot with high score
+    SupportSpot(clsVector2d pos, double val):pos(pos),
+    score(val){}
+};
 
 class clsSoccerTeam{
 
@@ -15,11 +25,10 @@ public:
     bool canShoot(clsPlayerBase from ,clsPlayerBase to,clsPlayerBase heading, int power);
     void requestPass(clsPlayerBase* );
 
-    clsFieldPlayer player1;
-    clsFieldPlayer player2;
-    clsFieldPlayer player3;
-    clsFieldPlayer player4;
-    clsGoalKeeper goalKeeper;
+    clsPlayerBase* recevingPlayer;
+    clsPlayerBase* playerClosestToBall;
+    clsPlayerBase* controllingPlayer;
+    clsPlayerBase* supportingPlayer;
 
 
 };

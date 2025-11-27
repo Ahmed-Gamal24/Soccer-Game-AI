@@ -27,8 +27,10 @@ public:
     
     clsSteeringBehavior* steerBehv;
 
-    clsMovingEntity();
-    clsMovingEntity(int id);
+    clsMovingEntity(clsVector2d position, double radius, clsVector2d scale, double mass,
+                    double maxSpeed, double maxForce, double maxTurnRate);
+    clsMovingEntity(int id, clsVector2d position, double radius, clsVector2d scale, double mass,
+                    double maxSpeed, double maxForce, double maxTurnRate);
 
     //function to check if the position exceeds the screen boundries to wrap around it
     void wrapAround(clsVector2d position, double width, double height);

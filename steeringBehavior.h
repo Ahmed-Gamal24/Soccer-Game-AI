@@ -17,6 +17,9 @@ class clsSteeringBehavior{
         enum Deceleration{slow = 3, normal = 2, fast = 1};
         clsVector2d arrive(clsVector2d targetPos, Deceleration deceleration);
 
+        const double MAXSTEERINGFORCE;
         clsVector2d calculate();
+
+        clsVector2d pursuit(clsMovingEntity* evader);
 
 };

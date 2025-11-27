@@ -11,8 +11,11 @@ int clsBaseGameEntity::getId(){
     return id;
 }
 
-clsBaseGameEntity::clsBaseGameEntity(int id){
+clsBaseGameEntity::clsBaseGameEntity(int id, clsVector2d position, double radius, clsVector2d scale){
     setId(id);
+    this->position = position;
+    this->boundingRadius = radius;
+    this->scale = scale;
 }
 
 void clsBaseGameEntity::update(){}

@@ -1,11 +1,27 @@
 #include"movingEntity.h"
 
-clsMovingEntity::clsMovingEntity():clsBaseGameEntity(clsBaseGameEntity::nextValidId++){
+clsMovingEntity::clsMovingEntity(clsVector2d position, double radius,
+                         clsVector2d scale, double mass,
+                         double maxSpeed, double maxForce, double maxTurnRate):
+                         clsBaseGameEntity(clsBaseGameEntity::nextValidId++, position, radius, scale)
+{
     steerBehv = new clsSteeringBehavior(this);
+    this->mass = mass;
+    this->maxSpeed = maxSpeed;
+    this->maxForce = maxForce;
+    this->maxTurnRate = maxTurnRate;
 }
 
-clsMovingEntity::clsMovingEntity(int id):clsBaseGameEntity(id){
+clsMovingEntity::clsMovingEntity(int id, clsVector2d position, double radius,
+                     clsVector2d scale, double mass, double maxSpeed,
+                     double maxForce, double maxTurnRate):
+                     clsBaseGameEntity(id, position, radius, scale)
+{
     steerBehv = new clsSteeringBehavior(this);
+    this->mass = mass;
+    this->maxSpeed = maxSpeed;
+    this->maxForce = maxForce;
+    this->maxTurnRate = maxTurnRate;
 }
 
 void clsMovingEntity::wrapAround(clsVector2d position, double width, double height){

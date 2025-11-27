@@ -69,7 +69,7 @@ int clsVector2d::sign(const clsVector2d& v2){
     return ( _x * v2.getX() ) - ( _y * v2.getY() );
 }
 
-void clsVector2d::Truncate(double max){
+void clsVector2d::truncate(double max){
     double sqLen = squaredLength();
     if (sqLen > max * max){ //so length > max
         
@@ -122,4 +122,13 @@ bool clsVector2d::operator==(const clsVector2d& rhs)const{
 
 bool clsVector2d::operator!=(const clsVector2d& rhs)const{
     return !this->operator==(rhs);
+}
+
+inline double clsVector2d::distanceSq(const clsVector2d &v2)const{
+    double SqDistance = (this->_x - v2.getX()) + (this->_y - v2.getY());
+    return SqDistance;
+}
+
+inline double clsVector2d::distance(const clsVector2d &v2)const{
+    return sqrt( distanceSq(v2) );
 }

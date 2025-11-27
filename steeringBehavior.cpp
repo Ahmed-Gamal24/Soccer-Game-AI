@@ -37,3 +37,28 @@ clsVector2d clsSteeringBehavior::arrive(clsVector2d targetPos, Deceleration dece
     return clsVector2d(0, 0);
 }
 
+clsVector2d clsSteeringBehavior::calculate(){
+    clsVector2d steeringForce;
+    steeringForce.operator+=();
+    steeringForce.operator+=();
+    steeringForce.operator+=();
+
+    steeringForce.Truncate(MAXSTEERINGFORCE);
+    return steeringForce;
+}
+
+clsVector2d clsSteeringBehavior::pursuit(clsMovingEntity* evader){
+    //if evader is facing the pursuiter: just seek the current position of evader
+    clsVector2d toEvader = evader->position.operator-=(movEntity->position);
+    double relativeHeading = movEntity->vHeading.dot(evader->vHeading);
+
+    if ((toEvader.dot(movEntity->vHeading) > 0) &&
+    (relativeHeading < -0.95)) //if the angle less than 18 degs, we consider the evader is ahead
+    {
+        return seek(evader->position);  
+    }
+    
+  
+    //if evader is not facing the pursuiter
+
+}

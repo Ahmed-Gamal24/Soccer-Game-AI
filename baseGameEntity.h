@@ -13,10 +13,10 @@ class clsBaseGameEntity{
 
         void setId(int id);
     
-    public:
+
         static int nextValidId;
 
-        clsBaseGameEntity(int id);
+        clsBaseGameEntity(int id, clsVector2d position, double radius, clsVector2d scale);
         int getId();
         void update();//virtual = all entities must implement update function
         void render();//draw visual representation of current state
