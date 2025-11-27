@@ -1,5 +1,4 @@
 
-#include <SDL3/SDL.h>
 #include"vector2d.h"
 #include"goal.h"
 #include"math.h"

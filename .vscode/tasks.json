@@ -18,11 +18,11 @@
                 "${workspaceFolder}/goal.cpp",
                 "${workspaceFolder}/boundryWall.cpp",
                 "${workspaceFolder}/baseGameEntity.cpp",
-                "${workspaceFolder}/fieldPlayer.cpp",
-                "${workspaceFolder}/movingEntity.cpp",
-                "${workspaceFolder}/playerBase.cpp",
-                "${workspaceFolder}/soccerBall.cpp",
-                "${workspaceFolder}/region.cpp",
+                //"${workspaceFolder}/fieldPlayer.cpp",
+                //"${workspaceFolder}/movingEntity.cpp",
+                //"${workspaceFolder}/playerBase.cpp",
+                //"${workspaceFolder}/soccerBall.cpp",
+                //"${workspaceFolder}/region.cpp",
                 
                 // --- 3. Output Flag ---
                 "-o", "${workspaceFolder}/build/main.exe",

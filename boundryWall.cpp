@@ -1,5 +1,5 @@
 #include"boundryWall.h"
-#include"SDL3\SDL.h"
+
 
 clsWall::clsWall(){
     clsVector2d zero;

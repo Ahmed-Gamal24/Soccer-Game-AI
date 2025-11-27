@@ -1,21 +1,22 @@
 #include "soccerBall.h"
 #include "math.h"
 
-// void clsSoccerBall::trap(clsPlayerBase *owner)
-// {
-//     velocity.zero();
-//     ballOwner = owner;
-// }
-
-// clsVector2d clsSoccerBall::getOldPos()
-// {
-//     return oldPosition;
-// }
-
-clsSoccerBall::clsSoccerBall(clsVector2d pos, int radi){
-    position = pos;
-    radius = radi;
+clsSoccerBall::clsSoccerBall(clsVector2d position, double ballSize,
+                  double mass, clsWall* pitchWalls):clsMovingEntity(clsBaseGameEntity::nextValidId++){
+    
 }
+
+void clsSoccerBall::trap(clsPlayerBase *owner)
+{
+    velocity.zero();
+    ballOwner = owner;
+}
+
+clsVector2d clsSoccerBall::getOldPos()
+{
+    return oldPosition;
+}
+
 
 void clsSoccerBall::render(SDL_Renderer *renderer)
 {

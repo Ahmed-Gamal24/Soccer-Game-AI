@@ -1,7 +1,7 @@
 #pragma once 
 
 #include"vector2d.h"
-#include"SDL3\SDL.h"
+#include"SDL3/SDL.h"
 
 class clsWall{ //wall(line) is defined by two points(2dvector)
 

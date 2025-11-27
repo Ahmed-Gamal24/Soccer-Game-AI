@@ -14,3 +14,7 @@ int clsBaseGameEntity::getId(){
 clsBaseGameEntity::clsBaseGameEntity(int id){
     setId(id);
 }
+
+void clsBaseGameEntity::update(){}
+
+void clsBaseGameEntity::render(){}

@@ -34,9 +34,9 @@ clsSoccerPitch::clsSoccerPitch(){
     //left wall
     boundries[3].setWall(topLeftPoint, bottomLeftPoint);
 
-
-    clsVector2d ballPos(_width/2, _height/2);
-    ball = new clsSoccerBall(ballPos, 20);
+    //start the soccerBall at the center of stadium
+    // clsVector2d ballPos(_width/2, _height/2);
+    // ball = new clsSoccerBall(ballPos, 20);
 }
 
 double clsSoccerPitch::getWidth(){
@@ -110,7 +110,7 @@ void clsSoccerPitch::render()
             blueGoal->render(renderer);
 
             //draw the ball at the center of pitch
-            ball->render(renderer);
+            // ball->render(renderer);
 
             
             // Update the Screen
