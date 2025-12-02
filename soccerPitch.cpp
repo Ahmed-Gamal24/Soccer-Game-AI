@@ -35,8 +35,8 @@ clsSoccerPitch::clsSoccerPitch(){
     boundries[3].setWall(topLeftPoint, bottomLeftPoint);
 
     //start the soccerBall at the center of stadium
-    // clsVector2d ballPos(_width/2, _height/2);
-    // ball = new clsSoccerBall(ballPos, 20);
+    clsVector2d ballPos(_width/2, _height/2);
+    ball = new clsSoccerBall(ballPos, 10, 10, 1, boundries);
 }
 
 double clsSoccerPitch::getWidth(){
@@ -47,84 +47,88 @@ double clsSoccerPitch::getHeight(){
 }
 
 void clsSoccerPitch::render()
-    {
-            // --- 1. Initialization ---
-        if (SDL_Init(SDL_INIT_VIDEO) < 0) {
-            // cerr is used for error messages
-            std::cerr << "SDL could not initialize! SDL Error: " << SDL_GetError() << std::endl;
-            return;
-        }
-
-        SDL_Window* window = nullptr;
-        SDL_Renderer* renderer = nullptr;
-
-        // --- 2. Window and Renderer Creation ---
-        // This creates both the window and its associated drawing context (renderer).
-        if (SDL_CreateWindowAndRenderer(
-                "Soccer AI Game",  // Window title
-                _width,                   // Width
-                _height,                  // Height
-                0,           // Flags: 0 -> unresiable window
-                &window,                        // Pointer to the created window
-                &renderer                       // Pointer to the created renderer
-            ) < 0) 
-        {
-            std::cerr << "Window/Renderer creation failed! SDL Error: " << SDL_GetError() << std::endl;
-            SDL_Quit();
-            return;
-        }
-
-        // --- 3. The Main Game Loop ---
-        bool IsRunning = true;
-        SDL_Event Event;
-
-        while (IsRunning) {
-            
-            // --- A. Event Polling (Check for user input) ---
-            while (SDL_PollEvent(&Event)) {
-                if (Event.type == SDL_EVENT_QUIT) {
-                    IsRunning = false;
-                }
-            }
-
-            // --- B. Rendering Steps (Drawing logic goes here) ---
-
-            // Clear the screen to a background color (white)
-            SDL_SetRenderDrawColor(renderer, 255, 255, 255, SDL_ALPHA_OPAQUE);
-            SDL_RenderClear(renderer);
-
-            // Set color for game elements (black)
-            SDL_SetRenderDrawColor(renderer, 0, 0, 0, SDL_ALPHA_OPAQUE); 
-    
-            // draw 4 walls which determine the game space
-            for(int i = 0; i < 4; ++i){
-                boundries[i].render(renderer);
-            }    
-        
-            // Draw the center Line
-            SDL_RenderLine(renderer,_width/2 ,0 ,_width/2 , _height); 
-            
-
-            //draw the two goals
-            redGoal->render(renderer);
-            blueGoal->render(renderer);
-
-            //draw the ball at the center of pitch
-            // ball->render(renderer);
-
-            
-            // Update the Screen
-            SDL_RenderPresent(renderer);
-
-            // Simple delay to cap frame rate (approx. 60 FPS)
-            SDL_Delay(1000 / 60); 
-        }
-
-        // --- 4. Cleanup ---
-        // Destroy the renderer first
-        SDL_DestroyRenderer(renderer);
-        // Destroy the window
-        SDL_DestroyWindow(window);
-        // Shut down all SDL subsystems
-        SDL_Quit();
+{
+    // --- 1. Initialization ---
+    if (SDL_Init(SDL_INIT_VIDEO) < 0) {
+        // cerr is used for error messages
+        std::cerr << "SDL could not initialize! SDL Error: " << SDL_GetError() << std::endl;
+        return;
     }
+
+    SDL_Window* window = nullptr;
+    SDL_Renderer* renderer = nullptr;
+
+    // --- 2. Window and Renderer Creation ---
+    // This creates both the window and its associated drawing context (renderer).
+    if (SDL_CreateWindowAndRenderer(
+            "Soccer AI Game",  // Window title
+            _width,                   // Width
+            _height,                  // Height
+            0,           // Flags: 0 -> unresiable window
+            &window,                        // Pointer to the created window
+            &renderer                       // Pointer to the created renderer
+        ) < 0) 
+    {
+        std::cerr << "Window/Renderer creation failed! SDL Error: " << SDL_GetError() << std::endl;
+        SDL_Quit();
+        return;
+    }
+
+    // --- 3. The Main Game Loop ---
+    bool IsRunning = true;
+    SDL_Event Event;
+
+    while (IsRunning) {
+        
+        // --- A. Event Polling (Check for user input) ---
+        while (SDL_PollEvent(&Event)) {
+            if (Event.type == SDL_EVENT_QUIT) {
+                IsRunning = false;
+            }
+        }
+
+        // --- B. Rendering Steps (Drawing logic goes here) ---
+
+        // Clear the screen to a background color (white)
+        SDL_SetRenderDrawColor(renderer, 255, 255, 255, SDL_ALPHA_OPAQUE);
+        SDL_RenderClear(renderer);
+
+        // Set color for game elements (black)
+        SDL_SetRenderDrawColor(renderer, 0, 0, 0, SDL_ALPHA_OPAQUE); 
+
+        // draw 4 walls which determine the game space
+        for(int i = 0; i < 4; ++i){
+            boundries[i].render(renderer);
+        }    
+    
+        // Draw the center Line
+        SDL_RenderLine(renderer,_width/2 ,0 ,_width/2 , _height); 
+        
+
+        //draw the two goals
+        redGoal->render(renderer);
+        blueGoal->render(renderer);
+
+        //draw the teams players
+        
+
+        //draw the ball (uses its own position and radius)
+        ball->render(renderer, 0, 0, 0);  // Black ball
+
+        
+        // Update the Screen
+        SDL_RenderPresent(renderer);
+
+        // Simple delay to cap frame rate (approx. 60 FPS)
+        SDL_Delay(1000 / 60); 
+    }
+
+    // --- 4. Cleanup ---
+    // Destroy the renderer first
+    SDL_DestroyRenderer(renderer);
+    // Destroy the window
+    SDL_DestroyWindow(window);
+    // Shut down all SDL subsystems
+    SDL_Quit();
+
+}

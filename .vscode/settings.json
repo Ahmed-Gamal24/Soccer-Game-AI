@@ -5,6 +5,7 @@
         "string_view": "cpp",
         "atomic": "cpp",
         "system_error": "cpp",
-        "typeinfo": "cpp"
+        "typeinfo": "cpp",
+        "new": "cpp"
     }
 }

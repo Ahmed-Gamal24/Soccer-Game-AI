@@ -3,7 +3,7 @@
 #include <SDL3/SDL.h>
 #include <vector>
 #include <iostream>
-#include"soccerTeam.h"
+// #include"soccerTeam.h"
 #include"soccerBall.h"
 #include"goal.h"
 #include"region.h"
@@ -22,8 +22,8 @@ private:
     clsGoal* redGoal;
     clsGoal* blueGoal;
 
-    // clsSoccerTeam* redTeam;
-    // clsSoccerTeam* blueTeam;
+    clsSoccerTeam* redTeam;
+    clsSoccerTeam* blueTeam;
 
     clsSoccerBall* ball;
 

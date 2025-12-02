@@ -2,12 +2,15 @@
 
 #include "playerBase.h"
 #include "telegram.h"
+#include "SDL3/SDL.h"
+#include "stateMachine.h"
 
 class clsFieldPlayer : public clsPlayerBase {
-
+private:
+    clsStateMachine<clsFieldPlayer> stateMachine;
 public:
     clsFieldPlayer();
     void update(); // update to the new state
-    void render(); // draw visual representation of current state
+    void render(SDL_Renderer *renderer); // draw visual representation of current state
     bool handleMessage(clsTelegram telegram);
 };

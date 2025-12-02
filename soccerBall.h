@@ -6,6 +6,7 @@
 #include"boundryWall.h"
 #include"SDL3/SDL.h"
 
+
 class clsSoccerBall : public clsMovingEntity{
 
 private:
@@ -15,9 +16,10 @@ private:
 
 public:
     clsSoccerBall(clsVector2d position, double radius,
-                 double ballSize, double mass, clsWall* pitchWalls);
+                 double ballSize, double mass,
+                  clsWall* pitchWalls);
     void update(double time_elapsed);//update to the new state
-    void render(SDL_Renderer* renderer);//draw visual representation of current state
+    void render(SDL_Renderer* renderer, Uint8 r = 255, Uint8 g = 255, Uint8 b = 255);//draw visual representation of current state using ball's own position and radius
     void kick(int clsVector2d, int force);
     
     double fricion = -0.015;

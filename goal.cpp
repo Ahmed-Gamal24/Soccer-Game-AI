@@ -3,7 +3,9 @@
 #include"goal.h"
 #include"math.h"
 
-clsGoal::clsGoal(clsVector2d left, clsVector2d right):clsBaseGameEntity(clsBaseGameEntity::nextValidId++){
+clsGoal::clsGoal(clsVector2d left, clsVector2d right):
+clsBaseGameEntity(clsBaseGameEntity::nextValidId++,
+ clsVector2d(0, 0), 10, clsVector2d(1, 1)){
     leftPost = left;
     rightPost = right;
 

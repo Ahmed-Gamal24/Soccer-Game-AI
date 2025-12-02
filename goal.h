@@ -5,7 +5,7 @@
 #include <SDL3/SDL.h>
 
 
-class clsGoal : clsBaseGameEntity{
+class clsGoal : public clsBaseGameEntity{
 private:
     
     //using the leftPost point and the rightPost point you see the line of the goal

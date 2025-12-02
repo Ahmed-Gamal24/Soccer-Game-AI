@@ -1,6 +1,7 @@
 #include"vector2d.h"
 #include"math.h"
 #include<stdexcept>
+#include <cmath>
 
 clsVector2d::clsVector2d(){
     _x = 0;
@@ -125,7 +126,10 @@ bool clsVector2d::operator!=(const clsVector2d& rhs)const{
 }
 
 inline double clsVector2d::distanceSq(const clsVector2d &v2)const{
-    double SqDistance = (this->_x - v2.getX()) + (this->_y - v2.getY());
+    double SqDistance = (this->_x - v2.getX())
+                        * (this->_x - v2.getX())
+                        + (this->_y - v2.getY())
+                        * (this->_y - v2.getY());
     return SqDistance;
 }
 

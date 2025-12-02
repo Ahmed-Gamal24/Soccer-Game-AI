@@ -2,12 +2,13 @@
 
 #include"movingEntity.h"
 #include"fieldPlayer.h"
+#include"steeringBehavior.h"
 
 
 class clsPlayerBase: public clsMovingEntity{
 
 private:
-    
+    clsSteeringBehavior* steerBehv;
 
 public:
     clsPlayerBase();

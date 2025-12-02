@@ -24,50 +24,74 @@ clsVector2d clsSoccerBall::getOldPos()
 
 clsVector2d clsSoccerBall::futurePosition(double time){
     //using the equation x = ut + 1/2at^2, where x = distance, a = friction
-    clsVector2d temp = this->velocity;
-    clsVector2d ut = this->velocity.operator*=(time);
-    double halfATSquared = 0.5 * fricion * time * time; 
-    temp.normalize();
-    clsVector2d scalareToVector = temp.operator*=(halfATSquared);
-    this->position.operator+=(ut);
-    this->position.operator+=(scalareToVector); 
-
+    // Calculate displacement due to current velocity: velocity * time
+    clsVector2d velocityDisplacement = this->velocity;
+    velocityDisplacement.operator*=(time);
+    
+    // Calculate displacement due to friction: 0.5 * friction * time^2 in velocity direction
+    double halfATSquared = 0.5 * fricion * time * time;
+    clsVector2d frictionDirection = this->velocity;
+    
+    // Only apply friction if velocity is not zero
+    if (!frictionDirection.isZero()) {
+        frictionDirection.normalize();
+        frictionDirection.operator*=(halfATSquared);
+    }
+    
+    // Calculate future position: current position + velocity displacement + friction displacement
+    clsVector2d futurePos = this->position;
+    futurePos.operator+=(velocityDisplacement);
+    futurePos.operator+=(frictionDirection);
+    
+    return futurePos;
 }
 
 
-void clsSoccerBall::render(SDL_Renderer *renderer)
+void clsSoccerBall::render(SDL_Renderer* renderer, Uint8 r, Uint8 g, Uint8 b) 
 {
-    // simple filled circle using horizontal spans (midpoint circle algorithm)
-    int x = this->boundingRadius;
-    int y = 0;
-    int radiusError = 1 - x;
+    // Validate inputs
+    if (!renderer || boundingRadius <= 0) {
+        return;
+    }
+    
+    // Use ball's own position and radius
+    float center_x = (float)position.getX();
+    float center_y = (float)position.getY();
+    float radius = (float)boundingRadius;
+    
+    // Set the drawing color for the circle
+    SDL_SetRenderDrawColor(renderer, r, g, b, SDL_ALPHA_OPAQUE);
 
-    int cx = static_cast<int>(std::round(position.getX()));
-    int cy = static_cast<int>(std::round(position.getY()));
+    // Midpoint Circle Algorithm for filled circle using float coordinates
+    float x = radius;
+    float y = 0.0f;
+    float radiusError = 1.0f - x;
 
-    while (x >= y)
+    // The loop calculates one octant and uses symmetry to draw the rest with horizontal lines.
+    while (x >= y) 
     {
-        // top half
-        SDL_RenderLine(renderer, cx - x, cy - y, cx + x, cy - y);
-        SDL_RenderLine(renderer, cx - y, cy - x, cx + y, cy - x);
+        // Draw horizontal lines across the circle's width at the current y step.
+        // This process fills the interior of the circle using SDL3's float-based rendering.
+        
+        // Top half
+        SDL_RenderLine(renderer, center_x - x, center_y - y, center_x + x, center_y - y);
+        SDL_RenderLine(renderer, center_x - y, center_y - x, center_x + y, center_y - x);
 
-        // bottom half
-        SDL_RenderLine(renderer, cx - x, cy + y, cx + x, cy + y);
-        SDL_RenderLine(renderer, cx - y, cy + x, cx + y, cy + x);
+        // Bottom half
+        SDL_RenderLine(renderer, center_x - x, center_y + y, center_x + x, center_y + y);
+        SDL_RenderLine(renderer, center_x - y, center_y + x, center_x + y, center_y + x);
 
+        // Update the error term to find the next point
         y++;
-        if (radiusError < 0)
+        if (radiusError < 0) 
         {
-            radiusError += 2 * y + 1;
-        }
-        else
-        {
+            radiusError += 2.0f * y + 1.0f;
+        } else {
             x--;
-            radiusError += 2 * (y - x) + 1;
+            radiusError += 2.0f * (y - x) + 1.0f;
         }
     }
 }
-
 
 double clsSoccerBall::timeToCoverDistance(clsVector2d A, clsVector2d B, double force)const
 {

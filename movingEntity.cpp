@@ -32,7 +32,7 @@ void clsMovingEntity::update(double time_elapsed){
     clsVector2d steeringForce = steerBehv->calculate();
     clsVector2d acceleration = steeringForce.operator/=(this->mass);
     this->velocity.operator+=(acceleration.operator*=(time_elapsed));
-    velocity.Truncate(this->maxSpeed);
+    velocity.truncate(this->maxSpeed);
     this->position.operator+=(velocity.operator*=(time_elapsed));
 
     if(velocity.squaredLength() > EPSILON){
