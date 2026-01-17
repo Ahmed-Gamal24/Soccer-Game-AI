@@ -3,6 +3,12 @@ This project implements a fully autonomous, competitive 2D soccer simulation bas
 
 The two opposing teams manage their own strategy, player roles, and movement without any human intervention, providing a compelling demonstration of reactive and goal-oriented artificial intelligence.
 
+# Screenshots (Match Overview)
+
+![image](screenshots/img_1.png)
+
+![image](screenshots/img_2.png)
+
 # Features and AI Architecture
 
 The simulation's intelligence layer is structured using a combination of Finite State Machines (FSMs) and a real-time messaging system to ensure cooperative play.
