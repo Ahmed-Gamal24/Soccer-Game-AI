@@ -2,9 +2,11 @@
 
 #include"baseGameEntity.h"
 #include"telegram.h"
-#include"soccerPitch.h"
-#include"steeringBehavior.h"
+#include"vector2d.h"
 
+// Forward declarations
+class clsSoccerPitch;
+class clsSteeringBehavior;
 
 class clsMovingEntity : public clsBaseGameEntity{
 public:

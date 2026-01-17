@@ -1,31 +1,44 @@
-#include"vector2d.h"
-#include"movingEntity.h"
-#include"soccerBall.h"
-#include"playerBase.h"
-#include"soccerPitch.h"
+#pragma once
 
+#include "vector2d.h"
 
+// Forward declarations
+class clsMovingEntity;
+class clsSoccerBall;
+class clsPlayerBase;
+class clsSoccerPitch;
 
+class clsSteeringBehavior
+{
+public:
+    enum Deceleration
+    {
+        slow = 3,
+        normal = 2,
+        fast = 1
+    };
 
-class clsSteeringBehavior{
-    private:
+private:
+    clsSoccerBall *ball;
+    clsPlayerBase *player;
+    clsSoccerPitch *pitch;
 
-        clsSoccerBall* ball;
-        clsPlayerBase* player;
-        clsSoccerPitch* pitch;
-        
-    public:
-        clsSteeringBehavior(clsPlayerBase* player);
+    // Current steering targets and behavior
+    clsVector2d targetPos;
+    bool isSeeking;
+    bool isArriving;
+    Deceleration currentDeceleration;
 
-        //seek function generate the required force to reach the tartgetPos
-        clsVector2d seek(clsVector2d targetPos);
+public:
+    clsSteeringBehavior(clsPlayerBase *player);
 
-        enum Deceleration{slow = 3, normal = 2, fast = 1};
-        clsVector2d arrive(clsVector2d targetPos, Deceleration deceleration);
+    // seek function generate the required force to reach the tartgetPos
+    clsVector2d seek(clsVector2d targetPos);
 
-        const double MAXSTEERINGFORCE = 100;
-        clsVector2d calculate();
+    clsVector2d arrive(clsVector2d targetPos, Deceleration deceleration);
 
-        clsVector2d pursuit(clsMovingEntity* evader);
+    const double MAXSTEERINGFORCE = 100;
+    clsVector2d calculate();
 
+    clsVector2d pursuit(clsMovingEntity *evader);
 };

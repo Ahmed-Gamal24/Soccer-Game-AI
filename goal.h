@@ -1,8 +1,11 @@
 #pragma once 
 
 #include"baseGameEntity.h"
-#include"soccerBall.h"
+#include"vector2d.h"
 #include <SDL3/SDL.h>
+
+// Forward declaration
+class clsSoccerBall;
 
 
 class clsGoal : public clsBaseGameEntity{

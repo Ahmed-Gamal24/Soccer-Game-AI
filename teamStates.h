@@ -1,8 +1,10 @@
 #pragma once
 
 #include"state.h"
-#include"soccerTeam.h"
 #include"stateMachine.h"
+
+// Forward declaration
+class clsSoccerTeam;
 
 
 class Attacking : public clsState<clsSoccerTeam>{

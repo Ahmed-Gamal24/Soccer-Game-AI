@@ -42,20 +42,20 @@ public:
     int sign(const clsVector2d& v2);
 
     //returns the vector that is perpendicular to this vector(current object)
-    inline clsVector2d perp()const;
+    clsVector2d perp()const;
 
     //adjusts x and y so that the length of the vector does not exceed max
     void truncate(double max);
 
     //squared version of above
-    inline double distanceSq(const clsVector2d &v2)const;
+    double distanceSq(const clsVector2d &v2)const;
     
     //returns the distance between this vector and the one passed as a parameter
-    inline double distance(const clsVector2d &v2)const;
+    double distance(const clsVector2d &v2)const;
 
 
     //returns the vector that is the reverse of this vector
-    inline clsVector2d GetReverse()const;
+    clsVector2d GetReverse()const;
 
     //we need some operators
     const clsVector2d& operator+=(const clsVector2d &rhs);

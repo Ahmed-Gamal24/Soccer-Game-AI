@@ -15,9 +15,9 @@ class clsStateMachine{
     public:
 
         clsStateMachine(entity_type* owner):owner(owner),
-                                   currentState(NULL),
-                                   previousState(NULL),
-                                   globalState(NULL){}
+                                   currentState(nullptr),
+                                   previousState(nullptr),
+                                   globalState(nullptr){}
 
         void setCurrentState(clsState<entity_type>* state);
         void setPreviousState(clsState<entity_type>* state);

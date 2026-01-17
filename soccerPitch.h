@@ -1,41 +1,56 @@
-#pragma once 
+#pragma once
 
 #include <SDL3/SDL.h>
 #include <vector>
 #include <iostream>
-// #include"soccerTeam.h"
-#include"soccerBall.h"
-#include"goal.h"
-#include"region.h"
-#include"boundryWall.h"
+#include "region.h"
+#include "boundryWall.h"
 
+// Forward declarations
+class clsSoccerTeam;
+class clsSoccerBall;
+class clsGoal;
 
-class clsSoccerPitch{
+class clsSoccerPitch
+{
 private:
-    //dimentions of the stadium
+    // dimentions of the stadium
     double _width;
     double _height;
-    bool _gameOn; 
+    bool _gameOn;
 
-    clsWall* boundries;
+    clsWall *boundries;
 
-    clsGoal* redGoal;
-    clsGoal* blueGoal;
+    clsGoal *redGoal;
+    clsGoal *blueGoal;
 
-    clsSoccerTeam* redTeam;
-    clsSoccerTeam* blueTeam;
+    clsSoccerTeam *redTeam;
+    clsSoccerTeam *blueTeam;
 
-    clsSoccerBall* ball;
+    clsSoccerBall *ball;
 
+    std::vector<clsRegion> regions;
+
+    // Scoring system
+    int redScore;
+    int blueScore;
+    const int WINNING_SCORE = 3;
 
 public:
-    /* the update and render functions here in the ptich class 
+    /* the update and render functions here in the ptich class
        used to call all the update and render functions of all entities
     */
     clsSoccerPitch();
     double getWidth();
     double getHeight();
-    void update();//update to the new state
-    void render();//draw visual representation of current state
+    clsSoccerBall *getBall();
 
+    // Scoring and game state
+    int getRedScore() const { return redScore; }
+    int getBlueScore() const { return blueScore; }
+    int getWinningScore() const { return WINNING_SCORE; }
+    void resetGame();
+
+    void update(); // update to the new state
+    void render(); // draw visual representation of current state
 };
