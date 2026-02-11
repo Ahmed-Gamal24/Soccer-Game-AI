@@ -9,34 +9,31 @@
                 "-g",
                 
                 // --- 1. Include Directories (-I flag) ---
-                "-I", "${workspaceFolder}/SDL3-3.2.26/include",
+                "-I", "${workspaceFolder}/include",
                 
-                // --- 2. Source File to Compile (Active File Only) ---
-                "${workspaceFolder}/main.cpp",
-                "${workspaceFolder}/soccerPitch.cpp",
-                "${workspaceFolder}/vector2d.cpp",
-                "${workspaceFolder}/goal.cpp",
-                "${workspaceFolder}/goalKeeper.cpp",
-                "${workspaceFolder}/boundryWall.cpp",
-                "${workspaceFolder}/baseGameEntity.cpp",
-                "${workspaceFolder}/fieldPlayer.cpp",
-                "${workspaceFolder}/fieldPlayerStates.cpp",
-                "${workspaceFolder}/movingEntity.cpp",
-                "${workspaceFolder}/playerBase.cpp",
-                "${workspaceFolder}/soccerBall.cpp",
-                "${workspaceFolder}/soccerTeam.cpp",
-                "${workspaceFolder}/steeringBehavior.cpp",
-                "${workspaceFolder}/teamStates.cpp",
-                "${workspaceFolder}/region.cpp",
+                // --- 2. Source Files to Compile ---
+                "${workspaceFolder}/src/main.cpp",
+                "${workspaceFolder}/src/soccerPitch.cpp",
+                "${workspaceFolder}/src/vector2d.cpp",
+                "${workspaceFolder}/src/goal.cpp",
+                "${workspaceFolder}/src/goalKeeper.cpp",
+                "${workspaceFolder}/src/boundryWall.cpp",
+                "${workspaceFolder}/src/baseGameEntity.cpp",
+                "${workspaceFolder}/src/fieldPlayer.cpp",
+                "${workspaceFolder}/src/fieldPlayerStates.cpp",
+                "${workspaceFolder}/src/movingEntity.cpp",
+                "${workspaceFolder}/src/playerBase.cpp",
+                "${workspaceFolder}/src/soccerBall.cpp",
+                "${workspaceFolder}/src/soccerTeam.cpp",
+                "${workspaceFolder}/src/steeringBehavior.cpp",
+                "${workspaceFolder}/src/teamStates.cpp",
+                "${workspaceFolder}/src/region.cpp",
                 
                 // --- 3. Output Flag ---
-                "-o", "${workspaceFolder}/build/main.exe",
+                "-o", "${workspaceFolder}/build/main",
                 
-                // --- 4. Library Paths (-L flag) ---
-                "-L", "${workspaceFolder}/SDL3-3.2.26/lib/x64",
-                
-                // --- 5. Link Libraries (-l flag) ---
-                "-lSDL3",
+                // --- 4. Link Libraries (SDL2) ---
+                "-lSDL2",
             ],
             "options": {
                 "cwd": "${workspaceFolder}"

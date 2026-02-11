@@ -1,0 +1,37 @@
+#pragma once
+
+#include "movingEntity.h"
+#include "vector2d.h"
+#include "boundryWall.h"
+#include <SDL2/SDL.h>
+
+// Forward declaration
+class clsPlayerBase;
+
+class clsSoccerBall : public clsMovingEntity
+{
+
+private:
+    clsVector2d oldPosition;
+    clsPlayerBase *ballOwner;
+    clsWall *pitchWalls; // to test collision between ball and walls
+
+public:
+    clsSoccerBall(clsVector2d position, double radius,
+                  double ballSize, double mass,
+                  clsWall *pitchWalls);
+    void update(double time_elapsed);                                                       // update to the new state
+    void render(SDL_Renderer *renderer, uint8_t r = 255, uint8_t g = 255, uint8_t b = 255); // draw visual representation of current state using ball's own position and radius
+    void kick(clsVector2d direction, int force);
+
+    double fricion = -0.015;
+    clsVector2d futurePosition(double time);
+    void trap(clsPlayerBase *owner);
+    // calc the time taken to move from position a to position b based on that force
+    double timeToCoverDistance(clsVector2d A, clsVector2d B, double force) const;
+    void testCollisionWithWalls(clsWall *pitchWalls); // if collision happened reflect the ball's velocity
+    clsVector2d getOldPos();
+    void placeBallAtPosition(clsVector2d newPos);
+    clsPlayerBase *getBallOwner() const;
+    void setBallOwner(clsPlayerBase *owner);
+};
