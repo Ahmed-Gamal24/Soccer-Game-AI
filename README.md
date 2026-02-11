@@ -7,7 +7,6 @@ The two opposing teams manage their own strategy, player roles, and movement wit
 
 ![image](screenshots/img_1.png)
 
-![image](screenshots/img_2.png)
 
 # Features and AI Architecture
 
