@@ -110,9 +110,15 @@ void PrepareForKickOff::Execute(clsSoccerTeam *entity)
     // Once all players are ready, start the game
     if (allPlayersReady)
     {
-        // Transition to Attacking (assuming this team kicks off)
-        // In a full implementation, only one team attacks initially
-        entity->stateMachine.changeState(new Attacking());
+        // Start with one deterministic kickoff side.
+        if (entity->getTeamColor() == TeamColor::Red)
+        {
+            entity->stateMachine.changeState(new Attacking());
+        }
+        else
+        {
+            entity->stateMachine.changeState(new Defending());
+        }
     }
 }
 

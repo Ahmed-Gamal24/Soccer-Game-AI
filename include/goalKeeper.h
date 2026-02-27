@@ -9,7 +9,7 @@ class clsGoalKeeper : public clsPlayerBase
 private:
     /* if goalKeeper has the ball,
     the nearby apponent will not attempt to kick it */
-    bool goalKeeperHasBall;
+    bool goalKeeperHasBall = false;
 
 public:
     // Color properties (RGB)

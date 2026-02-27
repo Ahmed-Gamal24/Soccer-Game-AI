@@ -80,17 +80,55 @@ clsVector2d clsSteeringBehavior::calculate()
 
 clsVector2d clsSteeringBehavior::pursuit(clsMovingEntity *evader)
 {
-    // if evader is facing the pursuiter: just seek the current position of evader
+    // Compute vector to the evader
     clsVector2d toEvader = evader->position;
     toEvader.operator-=(player->position);
+
     double relativeHeading = player->vHeading.dot(evader->vHeading);
 
-    if ((toEvader.dot(player->vHeading) > 0) &&
-        (relativeHeading < -0.95)) // if the angle less than 18 degs, we consider the evader is ahead
+    // If the evader is ahead and facing us, then seek its current position
+    if ((toEvader.dot(player->vHeading) > 0) && (relativeHeading < -0.95))
     {
-        return seek(evader->position);
+        // Use the same steering logic as seek but return the steering force directly
+        clsVector2d desired = evader->position;
+        desired.operator-=(player->position);
+        if (!desired.isZero())
+        {
+            desired.normalize();
+            desired.operator*=(player->maxSpeed);
+        }
+        clsVector2d steering = desired;
+        steering.operator-=(player->velocity);
+        steering.truncate(MAXSTEERINGFORCE);
+        return steering;
     }
 
-    // if evader is not facing the pursuiter
-    return toEvader;
+    // Not heading directly towards us — predict future position of the evader
+    double distance = toEvader.length();
+    double speed = player->maxSpeed + evader->velocity.length();
+    double lookAheadTime = 0.0;
+    if (speed > 0.0001)
+    {
+        lookAheadTime = distance / speed;
+    }
+
+    // Predict future position
+    clsVector2d futurePos = evader->position;
+    clsVector2d evVel = evader->velocity;
+    evVel.operator*=(lookAheadTime);
+    futurePos.operator+=(evVel);
+
+    // Compute steering towards predicted position
+    clsVector2d desired = futurePos;
+    desired.operator-=(player->position);
+    if (!desired.isZero())
+    {
+        desired.normalize();
+        desired.operator*=(player->maxSpeed);
+    }
+
+    clsVector2d steering = desired;
+    steering.operator-=(player->velocity);
+    steering.truncate(MAXSTEERINGFORCE);
+    return steering;
 }

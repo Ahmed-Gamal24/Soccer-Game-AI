@@ -1,7 +1,70 @@
 #include "../include/goalKeeper.h"
+#include "../include/soccerPitch.h"
+#include "../include/soccerBall.h"
+#include "../include/soccerTeam.h"
+#include "../include/steeringBehavior.h"
 #include <SDL2/SDL.h>
+#include <algorithm>
 
-void clsGoalKeeper::update() {}
+namespace
+{
+double clampValue(double v, double minV, double maxV)
+{
+    return std::max(minV, std::min(v, maxV));
+}
+}
+
+void clsGoalKeeper::update()
+{
+    if (soccerPitch == nullptr)
+        return;
+
+    clsSoccerBall *ball = soccerPitch->getBall();
+    if (ball == nullptr)
+        return;
+
+    double pitchWidth = soccerPitch->getWidth();
+    double pitchHeight = soccerPitch->getHeight();
+
+    // Keepers slide on their own goal line and track the ball vertically.
+    bool defendsLeftGoal = position.getX() < pitchWidth / 2.0;
+    double goalLineX = defendsLeftGoal ? (pitchWidth / 8.0) : ((pitchWidth * 7.0) / 8.0);
+    double minGoalY = pitchHeight / 3.0;
+    double maxGoalY = (pitchHeight * 2.0) / 3.0;
+    double targetY = clampValue(ball->position.getY(), minGoalY, maxGoalY);
+
+    if (steerBehv != nullptr)
+    {
+        steerBehv->arrive(clsVector2d(goalLineX, targetY), clsSteeringBehavior::Deceleration::normal);
+    }
+
+    // Move goalkeeper.
+    clsMovingEntity::update(1.0 / 60.0);
+
+    // Trap very close free balls in the box.
+    goalKeeperHasBall = false;
+    if (ball->getBallOwner() == nullptr && position.distance(ball->position) < 45.0)
+    {
+        ball->trap(this);
+        goalKeeperHasBall = true;
+
+        clsSoccerTeam *redTeam = soccerPitch->getRedTeam();
+        clsSoccerTeam *blueTeam = soccerPitch->getBlueTeam();
+
+        if (redTeam != nullptr && redTeam->getGoalKeeper() == this)
+        {
+            redTeam->setControllingPlayer(this);
+            if (blueTeam != nullptr)
+                blueTeam->setControllingPlayer(nullptr);
+        }
+        else if (blueTeam != nullptr && blueTeam->getGoalKeeper() == this)
+        {
+            blueTeam->setControllingPlayer(this);
+            if (redTeam != nullptr)
+                redTeam->setControllingPlayer(nullptr);
+        }
+    }
+}
 
 void clsGoalKeeper::render(SDL_Renderer *renderer)
 {

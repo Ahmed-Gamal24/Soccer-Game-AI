@@ -52,10 +52,6 @@ clsSoccerPitch::clsSoccerPitch(SDL_Renderer *renderer, int w, int h)
     clsVector2d ballPos(_width / 2, _height / 2);
     ball = new clsSoccerBall(ballPos, 10, 10, 1, boundries);
 
-    // Kick the ball toward the blue goal to trigger gameplay
-    clsVector2d kickDirection(1, 0); // Toward right (blue goal)
-    ball->kick(kickDirection, 300);  // Stronger kick
-
     // Initialize teams
     redTeam = new clsSoccerTeam();
     redTeam->setColor(TeamColor::Red);
@@ -173,17 +169,18 @@ clsSoccerPitch::clsSoccerPitch(SDL_Renderer *renderer, int w, int h)
     }
 
     // set home regions of players in two teams
-    redTeam->getControllingPlayer()->setPlayerHomeRegion(regions[5].getCenter());
-    redTeam->getPlayerClosestToBall()->setPlayerHomeRegion(regions[13].getCenter());
-    redTeam->getReceivingPlayer()->setPlayerHomeRegion(regions[14].getCenter());
-    redTeam->getSupportingPlayer()->setPlayerHomeRegion(regions[20].getCenter());
-    redTeam->getGoalKeeper()->setPlayerHomeRegion(regions[15].getCenter());
+    // Red defends left goal, Blue defends right goal.
+    redTeam->getControllingPlayer()->setPlayerHomeRegion(regions[2].getCenter());
+    redTeam->getPlayerClosestToBall()->setPlayerHomeRegion(regions[11].getCenter());
+    redTeam->getReceivingPlayer()->setPlayerHomeRegion(regions[9].getCenter());
+    redTeam->getSupportingPlayer()->setPlayerHomeRegion(regions[18].getCenter());
+    redTeam->getGoalKeeper()->setPlayerHomeRegion(regions[8].getCenter());
 
-    blueTeam->getControllingPlayer()->setPlayerHomeRegion(regions[2].getCenter());
-    blueTeam->getPlayerClosestToBall()->setPlayerHomeRegion(regions[11].getCenter());
-    blueTeam->getReceivingPlayer()->setPlayerHomeRegion(regions[9].getCenter());
-    blueTeam->getSupportingPlayer()->setPlayerHomeRegion(regions[18].getCenter());
-    blueTeam->getGoalKeeper()->setPlayerHomeRegion(regions[8].getCenter());
+    blueTeam->getControllingPlayer()->setPlayerHomeRegion(regions[5].getCenter());
+    blueTeam->getPlayerClosestToBall()->setPlayerHomeRegion(regions[13].getCenter());
+    blueTeam->getReceivingPlayer()->setPlayerHomeRegion(regions[14].getCenter());
+    blueTeam->getSupportingPlayer()->setPlayerHomeRegion(regions[20].getCenter());
+    blueTeam->getGoalKeeper()->setPlayerHomeRegion(regions[15].getCenter());
 }
 
 double clsSoccerPitch::getWidth()
@@ -197,6 +194,16 @@ double clsSoccerPitch::getHeight()
 clsSoccerBall *clsSoccerPitch::getBall()
 {
     return ball;
+}
+
+clsSoccerTeam *clsSoccerPitch::getRedTeam()
+{
+    return redTeam;
+}
+
+clsSoccerTeam *clsSoccerPitch::getBlueTeam()
+{
+    return blueTeam;
 }
 void clsSoccerPitch::update()
 {
@@ -292,6 +299,23 @@ void clsSoccerPitch::update()
 
 void clsSoccerPitch::resetGame()
 {
+    if (ball != nullptr)
+    {
+        ball->placeBallAtPosition(clsVector2d(_width / 2.0, _height / 2.0));
+    }
+
+    if (redTeam != nullptr)
+    {
+        redTeam->setControllingPlayer(nullptr);
+        redTeam->stateMachine.changeState(new PrepareForKickOff());
+    }
+
+    if (blueTeam != nullptr)
+    {
+        blueTeam->setControllingPlayer(nullptr);
+        blueTeam->stateMachine.changeState(new PrepareForKickOff());
+    }
+
 }
 
 void clsSoccerPitch::render()

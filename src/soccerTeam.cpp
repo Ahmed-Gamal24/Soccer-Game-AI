@@ -3,6 +3,8 @@
 #include "../include/fieldPlayer.h"
 #include "../include/goalKeeper.h"
 #include "../include/teamStates.h"
+#include "../include/soccerPitch.h"
+#include "../include/soccerBall.h"
 
 //============= implementation of clsSupportSpotCalculator class======================
 
@@ -81,6 +83,48 @@ clsSoccerTeam::clsSoccerTeam() : recevingPlayer(nullptr), playerClosestToBall(nu
 
 void clsSoccerTeam::update()
 {
+    // Keep closest player-to-ball pointer updated every frame.
+    // This is a core selector used by chase/wait state logic.
+    if (!fieldPlayers.empty())
+    {
+        clsSoccerBall *ball = nullptr;
+        for (auto *player : fieldPlayers)
+        {
+            if (player != nullptr && player->soccerPitch != nullptr)
+            {
+                ball = player->soccerPitch->getBall();
+                if (ball != nullptr)
+                    break;
+            }
+        }
+
+        if (ball != nullptr)
+        {
+            clsPlayerBase *closest = nullptr;
+            double bestDistSq = 1e18;
+
+            for (auto *player : fieldPlayers)
+            {
+                if (player == nullptr)
+                    continue;
+
+                clsVector2d toBall = ball->position;
+                toBall.operator-=(player->position);
+                double distSq = toBall.squaredLength();
+                if (distSq < bestDistSq)
+                {
+                    bestDistSq = distSq;
+                    closest = player;
+                }
+            }
+
+            if (closest != nullptr)
+            {
+                setPlayerClosestToBall(closest);
+            }
+        }
+    }
+
     stateMachine.updateStateMachine();
 }
 

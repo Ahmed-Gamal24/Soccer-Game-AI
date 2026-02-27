@@ -46,6 +46,8 @@ public:
     double getWidth();
     double getHeight();
     clsSoccerBall *getBall();
+    clsSoccerTeam *getRedTeam();
+    clsSoccerTeam *getBlueTeam();
 
     // Scoring and game state
     int getRedScore() const { return redScore; }

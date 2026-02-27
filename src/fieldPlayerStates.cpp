@@ -6,6 +6,131 @@
 #include "../include/soccerPitch.h"
 #include "../include/playerBase.h"
 #include "../include/steeringBehavior.h"
+#include "../include/teamStates.h"
+
+namespace
+{
+clsSoccerTeam *getTeamForPlayer(clsFieldPlayer *player)
+{
+    if (player == nullptr || player->soccerPitch == nullptr)
+        return nullptr;
+
+    clsSoccerTeam *redTeam = player->soccerPitch->getRedTeam();
+    clsSoccerTeam *blueTeam = player->soccerPitch->getBlueTeam();
+
+    if (redTeam != nullptr)
+    {
+        for (auto *p : redTeam->getFieldPlayers())
+        {
+            if (p == player)
+                return redTeam;
+        }
+    }
+
+    if (blueTeam != nullptr)
+    {
+        for (auto *p : blueTeam->getFieldPlayers())
+        {
+            if (p == player)
+                return blueTeam;
+        }
+    }
+
+    return nullptr;
+}
+
+bool areOnSameTeam(clsFieldPlayer *player, clsPlayerBase *other)
+{
+    if (player == nullptr || other == nullptr || player->soccerPitch == nullptr)
+        return false;
+
+    clsSoccerTeam *redTeam = player->soccerPitch->getRedTeam();
+    clsSoccerTeam *blueTeam = player->soccerPitch->getBlueTeam();
+
+    if (redTeam != nullptr)
+    {
+        bool hasPlayer = false;
+        bool hasOther = false;
+        for (auto *p : redTeam->getFieldPlayers())
+        {
+            if (p == player)
+                hasPlayer = true;
+            if (p == other)
+                hasOther = true;
+        }
+        if (hasPlayer && hasOther)
+            return true;
+    }
+
+    if (blueTeam != nullptr)
+    {
+        bool hasPlayer = false;
+        bool hasOther = false;
+        for (auto *p : blueTeam->getFieldPlayers())
+        {
+            if (p == player)
+                hasPlayer = true;
+            if (p == other)
+                hasOther = true;
+        }
+        if (hasPlayer && hasOther)
+            return true;
+    }
+
+    return false;
+}
+
+bool isPreparingForKickoff(clsFieldPlayer *player)
+{
+    clsSoccerTeam *team = getTeamForPlayer(player);
+    if (team == nullptr)
+        return false;
+
+    clsState<clsSoccerTeam> *state = team->stateMachine.getCurrentState();
+    return dynamic_cast<PrepareForKickOff *>(state) != nullptr;
+}
+
+void setBallControlForPlayer(clsFieldPlayer *player)
+{
+    if (player == nullptr || player->soccerPitch == nullptr)
+        return;
+
+    clsSoccerTeam *redTeam = player->soccerPitch->getRedTeam();
+    clsSoccerTeam *blueTeam = player->soccerPitch->getBlueTeam();
+    clsSoccerTeam *team = getTeamForPlayer(player);
+
+    if (team == redTeam && redTeam != nullptr)
+    {
+        redTeam->setControllingPlayer(player);
+        if (blueTeam != nullptr)
+            blueTeam->setControllingPlayer(nullptr);
+    }
+    else if (team == blueTeam && blueTeam != nullptr)
+    {
+        blueTeam->setControllingPlayer(player);
+        if (redTeam != nullptr)
+            redTeam->setControllingPlayer(nullptr);
+    }
+}
+
+void clearBallControlForPlayer(clsFieldPlayer *player)
+{
+    if (player == nullptr || player->soccerPitch == nullptr)
+        return;
+
+    clsSoccerTeam *redTeam = player->soccerPitch->getRedTeam();
+    clsSoccerTeam *blueTeam = player->soccerPitch->getBlueTeam();
+
+    if (redTeam != nullptr && redTeam->getControllingPlayer() == player)
+    {
+        redTeam->setControllingPlayer(nullptr);
+    }
+    if (blueTeam != nullptr && blueTeam->getControllingPlayer() == player)
+    {
+        blueTeam->setControllingPlayer(nullptr);
+    }
+}
+} // namespace
 
 // GlobalPlayerState implementation
 void GlobalPlayerState::Enter(clsFieldPlayer *entity)
@@ -74,29 +199,31 @@ void ChaseBall::Execute(clsFieldPlayer *entity)
 
     // Distance at which to start giving up on the chase
     const double GIVE_UP_DISTANCE = 400.0;
+    clsSoccerTeam *team = getTeamForPlayer(entity);
 
-    // Check if ball is owned by a teammate
+    // Check if ball is owned by a teammate.
     bool ballOwnedByTeammate = false;
     clsPlayerBase *ballOwner = ball->getBallOwner();
     if (ballOwner != nullptr)
     {
-        // Check if ball owner is this player
-        if (ballOwner != entity)
-        {
+        if (ballOwner != entity && areOnSameTeam(entity, ballOwner))
             ballOwnedByTeammate = true;
-        }
     }
 
     // Transition to Dribble if player gains control of ball
     if (distanceToBall < CONTROL_RADIUS && !ballOwnedByTeammate)
     {
         ball->trap(entity); // Player now owns the ball
+        setBallControlForPlayer(entity);
         entity->stateMachine.changeState(new Dribble());
         return;
     }
 
-    // Transition back to ReturnToHomeRegion if ball is too far or controlled by teammate
-    if (distanceToBall > GIVE_UP_DISTANCE || ballOwnedByTeammate)
+    // Only the closest teammate should actively chase.
+    bool notClosestChaser = (team != nullptr && team->getPlayerClosestToBall() != entity);
+
+    // Transition back to ReturnToHomeRegion if ball is too far, controlled by teammate, or this is not the closest chaser
+    if (distanceToBall > GIVE_UP_DISTANCE || ballOwnedByTeammate || notClosestChaser)
     {
         entity->stateMachine.changeState(new ReturnToHomeRegion());
         return;
@@ -154,24 +281,15 @@ void Dribble::Execute(clsFieldPlayer *entity)
         return;
     }
 
-    // Define goal position based on team color
-    // Get pitch dimensions
+    // Define goal position based on team side.
     double pitchWidth = entity->soccerPitch->getWidth();
     double pitchHeight = entity->soccerPitch->getHeight();
     clsVector2d goalPos;
-
-    // We need to determine which team this player belongs to
-    // For now, use a heuristic: if x < width/2, attacking right goal; else attacking left goal
-    if (entity->position.getX() < pitchWidth / 2.0)
-    {
-        // Red team - attack toward right (blue goal)
+    clsSoccerTeam *team = getTeamForPlayer(entity);
+    if (team != nullptr && team->getTeamColor() == TeamColor::Red)
         goalPos = clsVector2d(pitchWidth - 100, pitchHeight / 2.0);
-    }
     else
-    {
-        // Blue team - attack toward left (red goal)
         goalPos = clsVector2d(100, pitchHeight / 2.0);
-    }
 
     // Dribble toward the goal
     if (entity->steerBehv != nullptr)
@@ -195,6 +313,7 @@ void Dribble::Exit(clsFieldPlayer *entity)
     if (ball != nullptr && ball->getBallOwner() == entity)
     {
         ball->setBallOwner(nullptr); // Release ownership
+        clearBallControlForPlayer(entity);
     }
 }
 
@@ -233,6 +352,7 @@ void ReceiveBall::Execute(clsFieldPlayer *entity)
     if (distanceToBall < CONTROL_RADIUS)
     {
         ball->trap(entity); // Player now owns the ball
+        setBallControlForPlayer(entity);
         entity->stateMachine.changeState(new Dribble());
         return;
     }
@@ -347,6 +467,7 @@ void SupportAttacker::Execute(clsFieldPlayer *entity)
     if (distanceToBall < 100.0 && ball->getBallOwner() == nullptr)
     {
         ball->trap(entity);
+        setBallControlForPlayer(entity);
         entity->stateMachine.changeState(new Dribble());
         return;
     }
@@ -410,12 +531,21 @@ void ReturnToHomeRegion::Execute(clsFieldPlayer *entity)
         return;
     }
 
-    // If ball becomes close while returning home, switch to chasing
+    // During kickoff, players should hold formation until state transition completes.
+    if (isPreparingForKickoff(entity))
+        return;
+
+    // If this player is the closest teammate and possession is not with a teammate, switch to chasing.
     clsSoccerBall *ball = entity->soccerPitch->getBall();
     if (ball != nullptr)
     {
+        clsPlayerBase *owner = ball->getBallOwner();
+        bool shouldChase = (owner == nullptr) || !areOnSameTeam(entity, owner);
+        clsSoccerTeam *team = getTeamForPlayer(entity);
+        bool isClosest = (team != nullptr && team->getPlayerClosestToBall() == entity);
+
         double distanceToBall = entity->position.distance(ball->position);
-        if (distanceToBall < 200.0)
+        if (shouldChase && isClosest && distanceToBall < 700.0)
         {
             entity->stateMachine.changeState(new ChaseBall());
             return;
@@ -464,15 +594,24 @@ void Wait::Execute(clsFieldPlayer *entity)
         entity->steerBehv->arrive(homeRegion, clsSteeringBehavior::Deceleration::slow);
     }
 
-    // Check if ball is close enough to start chasing
+    // During kickoff, players should hold formation until state transition completes.
+    if (isPreparingForKickoff(entity))
+        return;
+
+    // Check if ball is close enough to start chasing.
+    // Players should chase if the ball is free or controlled by the opponent.
     clsSoccerBall *ball = entity->soccerPitch->getBall();
     if (ball != nullptr)
     {
         double distanceToBall = entity->position.distance(ball->position);
+        clsPlayerBase *owner = ball->getBallOwner();
+        bool shouldChase = (owner == nullptr) || !areOnSameTeam(entity, owner);
+        clsSoccerTeam *team = getTeamForPlayer(entity);
+        bool isClosest = (team != nullptr && team->getPlayerClosestToBall() == entity);
 
-        // Transition to ChaseBall if ball is near and not owned
-        const double CHASE_DISTANCE = 200.0; // Lower threshold
-        if (distanceToBall < CHASE_DISTANCE && ball->getBallOwner() == nullptr)
+        // Transition to ChaseBall for the closest teammate when possession should be challenged.
+        const double CHASE_DISTANCE = 700.0;
+        if (isClosest && distanceToBall < CHASE_DISTANCE && shouldChase)
         {
             entity->stateMachine.changeState(new ChaseBall());
             return;

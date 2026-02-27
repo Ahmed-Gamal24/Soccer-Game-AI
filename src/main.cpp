@@ -22,8 +22,15 @@ int main()
 
     bool isRunning = true;
     SDL_Event event;
+
+    // Run slower than uncapped CPU speed so gameplay flow is observable.
+    const int targetFPS = 120;
+    const Uint32 targetFrameMs = 1000 / targetFPS;
+
     while (isRunning)
     {
+        Uint32 frameStart = SDL_GetTicks();
+
         while (SDL_PollEvent(&event) != 0)
         {
             if (event.type == SDL_QUIT)
@@ -32,6 +39,12 @@ int main()
 
         soccerPitch.update();
         soccerPitch.render();
+
+        Uint32 frameTime = SDL_GetTicks() - frameStart;
+        if (frameTime < targetFrameMs)
+        {
+            SDL_Delay(targetFrameMs - frameTime);
+        }
     }
 
     SDL_DestroyRenderer(renderer);
