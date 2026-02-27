@@ -1,5 +1,18 @@
 #include "../include/fieldPlayer.h"
 #include "../include/fieldPlayerStates.h"
+#include <cmath>
+
+namespace
+{
+void drawFilledCircle(SDL_Renderer *renderer, int cx, int cy, int radius)
+{
+    for (int dy = -radius; dy <= radius; ++dy)
+    {
+        int span = (int)std::sqrt((double)(radius * radius - dy * dy));
+        SDL_RenderDrawLine(renderer, cx - span, cy + dy, cx + span, cy + dy);
+    }
+}
+}
 
 clsFieldPlayer::clsFieldPlayer()
     : clsPlayerBase(clsBaseGameEntity::nextValidId++),
@@ -23,41 +36,46 @@ void clsFieldPlayer::render(SDL_Renderer *renderer)
     if (!renderer)
         return;
 
-    // Triangle size (in pixels)
-    const double triangleSize = 50.0;
+    int cx = (int)position.getX();
+    int cy = (int)position.getY();
+    int radius = 18;
 
-    // Get player position
-    double posX = position.getX();
-    double posY = position.getY();
+    // Subtle drop shadow.
+    SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
+    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 70);
+    drawFilledCircle(renderer, cx + 2, cy + 3, radius);
 
-    // Calculate triangle points based on heading and side vectors
-    // If heading is not initialized, default to pointing right
-    double headingX = !vHeading.isZero() ? vHeading.getX() : 1.0;
-    double headingY = !vHeading.isZero() ? vHeading.getY() : 0.0;
-    double sideX = !vSide.isZero() ? vSide.getX() : 0.0;
-    double sideY = !vSide.isZero() ? vSide.getY() : 1.0;
-
-    // Front tip of triangle (pointing in heading direction)
-    double tipX = posX + headingX * triangleSize;
-    double tipY = posY + headingY * triangleSize;
-
-    // Back points of triangle (base)
-    double backX = posX - headingX * (triangleSize * 0.5);
-    double backY = posY - headingY * (triangleSize * 0.5);
-
-    double leftX = backX + sideX * (triangleSize * 0.5);
-    double leftY = backY + sideY * (triangleSize * 0.5);
-
-    double rightX = backX - sideX * (triangleSize * 0.5);
-    double rightY = backY - sideY * (triangleSize * 0.5);
-
-    // Set color using the player's color properties
+    // Body.
     SDL_SetRenderDrawColor(renderer, colorR, colorG, colorB, SDL_ALPHA_OPAQUE);
+    drawFilledCircle(renderer, cx, cy, radius);
 
-    // Draw triangle outline (3 lines) - SDL_RenderDrawLine accepts int, so cast at call site
-    SDL_RenderDrawLine(renderer, (int)tipX, (int)tipY, (int)leftX, (int)leftY);     // Tip to left
-    SDL_RenderDrawLine(renderer, (int)tipX, (int)tipY, (int)rightX, (int)rightY);   // Tip to right
-    SDL_RenderDrawLine(renderer, (int)leftX, (int)leftY, (int)rightX, (int)rightY); // Base line
+    // Outline.
+    SDL_SetRenderDrawColor(renderer, 20, 20, 20, SDL_ALPHA_OPAQUE);
+    for (int a = 0; a < 360; ++a)
+    {
+        double rad = a * 0.017453292519943295;
+        int x = cx + (int)(std::cos(rad) * radius);
+        int y = cy + (int)(std::sin(rad) * radius);
+        SDL_RenderDrawPoint(renderer, x, y);
+    }
+
+    // Facing indicator.
+    clsVector2d heading = vHeading;
+    if (heading.isZero())
+    {
+        heading = clsVector2d(1.0, 0.0);
+    }
+    else
+    {
+        heading.normalize();
+    }
+
+    int hx = cx + (int)(heading.getX() * (radius + 10));
+    int hy = cy + (int)(heading.getY() * (radius + 10));
+    SDL_SetRenderDrawColor(renderer, 250, 250, 250, SDL_ALPHA_OPAQUE);
+    SDL_RenderDrawLine(renderer, cx, cy, hx, hy);
+    SDL_SetRenderDrawColor(renderer, 15, 15, 15, SDL_ALPHA_OPAQUE);
+    drawFilledCircle(renderer, hx, hy, 3);
 }
 
 bool clsFieldPlayer::handleMessage(clsTelegram telegram)

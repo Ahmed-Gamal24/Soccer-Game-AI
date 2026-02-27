@@ -10,6 +10,142 @@
 #include "../include/teamStates.h"
 // Include main header last (it uses forward declarations, but we need full defs above)
 #include "../include/soccerPitch.h"
+#include <algorithm>
+#include <cmath>
+
+namespace
+{
+struct BodyProxy
+{
+    clsMovingEntity *entity;
+    double radius;
+};
+
+void resolveBodyOverlaps(std::vector<BodyProxy> &bodies)
+{
+    for (size_t i = 0; i < bodies.size(); ++i)
+    {
+        for (size_t j = i + 1; j < bodies.size(); ++j)
+        {
+            clsMovingEntity *a = bodies[i].entity;
+            clsMovingEntity *b = bodies[j].entity;
+            if (a == nullptr || b == nullptr)
+                continue;
+
+            clsVector2d delta = b->position;
+            delta.operator-=(a->position);
+            double dist = delta.length();
+            double minDist = bodies[i].radius + bodies[j].radius;
+
+            if (dist < minDist)
+            {
+                if (dist < 0.0001)
+                {
+                    delta = clsVector2d(1.0, 0.0);
+                    dist = 1.0;
+                }
+                else
+                {
+                    delta.operator/=(dist); // normalize
+                }
+
+                double overlap = minDist - dist;
+                clsVector2d push = delta;
+                push.operator*=(overlap * 0.5);
+
+                a->position.operator-=(push);
+                b->position.operator+=(push);
+            }
+        }
+    }
+}
+
+void drawSevenSegDigit(SDL_Renderer *renderer, int x, int y, int digit, int scale, uint8_t r, uint8_t g, uint8_t b)
+{
+    static const bool seg[10][7] = {
+        {true, true, true, true, true, true, false},   // 0
+        {false, true, true, false, false, false, false}, // 1
+        {true, true, false, true, true, false, true},  // 2
+        {true, true, true, true, false, false, true},  // 3
+        {false, true, true, false, false, true, true}, // 4
+        {true, false, true, true, false, true, true},  // 5
+        {true, false, true, true, true, true, true},   // 6
+        {true, true, true, false, false, false, false}, // 7
+        {true, true, true, true, true, true, true},    // 8
+        {true, true, true, true, false, true, true}    // 9
+    };
+
+    if (digit < 0 || digit > 9)
+        digit = 0;
+
+    int t = std::max(2, scale); // segment thickness
+    int w = 14 * scale;
+    int h = 24 * scale;
+    int half = h / 2;
+
+    SDL_SetRenderDrawColor(renderer, r, g, b, SDL_ALPHA_OPAQUE);
+
+    // a
+    if (seg[digit][0]) { SDL_Rect r0 = {x + t, y, w - 2 * t, t}; SDL_RenderFillRect(renderer, &r0); }
+    // b
+    if (seg[digit][1]) { SDL_Rect r1 = {x + w - t, y + t, t, half - t}; SDL_RenderFillRect(renderer, &r1); }
+    // c
+    if (seg[digit][2]) { SDL_Rect r2 = {x + w - t, y + half, t, half - t}; SDL_RenderFillRect(renderer, &r2); }
+    // d
+    if (seg[digit][3]) { SDL_Rect r3 = {x + t, y + h - t, w - 2 * t, t}; SDL_RenderFillRect(renderer, &r3); }
+    // e
+    if (seg[digit][4]) { SDL_Rect r4 = {x, y + half, t, half - t}; SDL_RenderFillRect(renderer, &r4); }
+    // f
+    if (seg[digit][5]) { SDL_Rect r5 = {x, y + t, t, half - t}; SDL_RenderFillRect(renderer, &r5); }
+    // g
+    if (seg[digit][6]) { SDL_Rect r6 = {x + t, y + half - t / 2, w - 2 * t, t}; SDL_RenderFillRect(renderer, &r6); }
+}
+
+void drawScoreHud(SDL_Renderer *renderer, int pitchWidth, int redScore, int blueScore, bool gameOver)
+{
+    const int hudW = 280;
+    const int hudH = 70;
+    const int hudX = (pitchWidth - hudW) / 2;
+    const int hudY = 12;
+
+    SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
+    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 130);
+    SDL_Rect bg = {hudX, hudY, hudW, hudH};
+    SDL_RenderFillRect(renderer, &bg);
+
+    SDL_SetRenderDrawColor(renderer, 255, 255, 255, SDL_ALPHA_OPAQUE);
+    SDL_RenderDrawRect(renderer, &bg);
+
+    // Team color markers.
+    SDL_SetRenderDrawColor(renderer, 220, 60, 60, SDL_ALPHA_OPAQUE);
+    SDL_Rect redMarker = {hudX + 14, hudY + 18, 24, 34};
+    SDL_RenderFillRect(renderer, &redMarker);
+
+    SDL_SetRenderDrawColor(renderer, 60, 90, 230, SDL_ALPHA_OPAQUE);
+    SDL_Rect blueMarker = {hudX + hudW - 38, hudY + 18, 24, 34};
+    SDL_RenderFillRect(renderer, &blueMarker);
+
+    // Scores.
+    drawSevenSegDigit(renderer, hudX + 70, hudY + 18, redScore, 2, 255, 255, 255);
+    drawSevenSegDigit(renderer, hudX + 180, hudY + 18, blueScore, 2, 255, 255, 255);
+
+    // Center separator.
+    SDL_SetRenderDrawColor(renderer, 255, 255, 255, SDL_ALPHA_OPAQUE);
+    SDL_Rect sep = {hudX + (hudW / 2) - 2, hudY + 20, 4, hudH - 40};
+    SDL_RenderFillRect(renderer, &sep);
+
+    // Highlight winner when the game is finished.
+    if (gameOver)
+    {
+        bool redWon = redScore > blueScore;
+        SDL_SetRenderDrawColor(renderer, 255, 215, 0, SDL_ALPHA_OPAQUE);
+        SDL_Rect winRect = redWon ? SDL_Rect{hudX + 8, hudY + 12, 38, 46}
+                                  : SDL_Rect{hudX + hudW - 46, hudY + 12, 38, 46};
+        SDL_RenderDrawRect(renderer, &winRect);
+        SDL_RenderDrawRect(renderer, &winRect);
+    }
+}
+} // namespace
 
 clsSoccerPitch::clsSoccerPitch(SDL_Renderer *renderer, int w, int h)
 {
@@ -23,12 +159,13 @@ clsSoccerPitch::clsSoccerPitch(SDL_Renderer *renderer, int w, int h)
     blueScore = 0;
 
     // creating the two goals for two teams
-    clsVector2d redTeamLeftPost(_width / 8, _height / 3);
-    clsVector2d redTeamRightPost(_width / 8, (_height * 2) / 3);
+    const double goalLineInset = 2.0;
+    clsVector2d redTeamLeftPost(goalLineInset, _height / 3);
+    clsVector2d redTeamRightPost(goalLineInset, (_height * 2) / 3);
     redGoal = new clsGoal(redTeamLeftPost, redTeamRightPost);
 
-    clsVector2d blueTeamLeftPost((_width * 7) / 8, (_height * 2) / 3);
-    clsVector2d blueTeamRightPost((_width * 7) / 8, _height / 3);
+    clsVector2d blueTeamLeftPost(_width - goalLineInset, (_height * 2) / 3);
+    clsVector2d blueTeamRightPost(_width - goalLineInset, _height / 3);
     blueGoal = new clsGoal(blueTeamLeftPost, blueTeamRightPost);
 
     // the 4 determining game space
@@ -97,7 +234,7 @@ clsSoccerPitch::clsSoccerPitch(SDL_Renderer *renderer, int w, int h)
     // Create goalkeeper
     clsGoalKeeper *redGK = new clsGoalKeeper();
     redGK->setColor(255, 0, 0);
-    redGK->position = clsVector2d(_width / 8, _height / 2);
+    redGK->position = clsVector2d(goalLineInset, _height / 2);
     redGK->soccerPitch = this;
     redTeam->setGoalKeeper(redGK);
 
@@ -137,7 +274,7 @@ clsSoccerPitch::clsSoccerPitch(SDL_Renderer *renderer, int w, int h)
     // Create goalkeeper
     clsGoalKeeper *blueGK = new clsGoalKeeper();
     blueGK->setColor(0, 0, 255);
-    blueGK->position = clsVector2d(_width * 7 / 8, _height / 2);
+    blueGK->position = clsVector2d(_width - goalLineInset, _height / 2);
     blueGK->soccerPitch = this;
     blueTeam->setGoalKeeper(blueGK);
 
@@ -207,6 +344,12 @@ clsSoccerTeam *clsSoccerPitch::getBlueTeam()
 }
 void clsSoccerPitch::update()
 {
+    // Freeze the world once a team wins.
+    if (!_gameOn)
+    {
+        return;
+    }
+
     // Update ball
     if (ball != nullptr)
     {
@@ -254,6 +397,30 @@ void clsSoccerPitch::update()
             blueTeam->getGoalKeeper()->update();
         }
     }
+
+    // Resolve player/keeper overlap so entities don't pass through each other.
+    std::vector<BodyProxy> bodies;
+    if (redTeam != nullptr)
+    {
+        for (auto *player : redTeam->getFieldPlayers())
+        {
+            if (player != nullptr)
+                bodies.push_back({player, 18.0});
+        }
+        if (redTeam->getGoalKeeper() != nullptr)
+            bodies.push_back({redTeam->getGoalKeeper(), 24.0});
+    }
+    if (blueTeam != nullptr)
+    {
+        for (auto *player : blueTeam->getFieldPlayers())
+        {
+            if (player != nullptr)
+                bodies.push_back({player, 18.0});
+        }
+        if (blueTeam->getGoalKeeper() != nullptr)
+            bodies.push_back({blueTeam->getGoalKeeper(), 24.0});
+    }
+    resolveBodyOverlaps(bodies);
 
     // Check for goals
     if (ball != nullptr && _gameOn)
@@ -320,29 +487,93 @@ void clsSoccerPitch::resetGame()
 
 void clsSoccerPitch::render()
 {
-    // Clear screen with white background
+    int w = static_cast<int>(_width);
+    int h = static_cast<int>(_height);
+
+    // Vertical gradient base.
+    for (int y = 0; y < h; ++y)
+    {
+        double t = static_cast<double>(y) / std::max(1, h - 1);
+        int r = static_cast<int>(56 + 16 * t);
+        int g = static_cast<int>(149 + 34 * t);
+        int b = static_cast<int>(96 + 17 * t);
+        SDL_SetRenderDrawColor(_renderer, r, g, b, SDL_ALPHA_OPAQUE);
+        SDL_RenderDrawLine(_renderer, 0, y, w, y);
+    }
+
+    // Faint horizontal turf stripes.
+    int stripeCount = 10;
+    int stripeHeight = h / stripeCount;
+    SDL_SetRenderDrawBlendMode(_renderer, SDL_BLENDMODE_BLEND);
+    for (int i = 0; i < stripeCount; ++i)
+    {
+        if (i % 2 == 0)
+        {
+            SDL_SetRenderDrawColor(_renderer, 255, 255, 255, 14);
+            SDL_Rect stripe = {0, i * stripeHeight, w, stripeHeight};
+            SDL_RenderFillRect(_renderer, &stripe);
+        }
+    }
+
+    // Pitch markings.
     SDL_SetRenderDrawColor(_renderer, 255, 255, 255, SDL_ALPHA_OPAQUE);
-    SDL_RenderClear(_renderer);
 
-    // Render all game entities
-    // render center line
-    SDL_SetRenderDrawColor(_renderer, 0, 0, 0, SDL_ALPHA_OPAQUE); // Black color
-    SDL_RenderDrawLine(_renderer, static_cast<int>(_width / 2), 0, static_cast<int>(_width / 2), static_cast<int>(_height));
+    SDL_Rect pitchBoundary = {2, 2, w - 4, h - 4};
+    SDL_RenderDrawRect(_renderer, &pitchBoundary);
 
-    // Render goals
-    if (redGoal != nullptr)
+    int cx = w / 2;
+    int cy = h / 2;
+    SDL_RenderDrawLine(_renderer, cx, 0, cx, h);
+
+    // Center circle.
+    int centerRadius = h / 7;
+    for (int a = 0; a < 360; ++a)
     {
-        redGoal->render(_renderer);
+        double rad = a * 0.017453292519943295;
+        int x = cx + static_cast<int>(std::cos(rad) * centerRadius);
+        int y = cy + static_cast<int>(std::sin(rad) * centerRadius);
+        SDL_RenderDrawPoint(_renderer, x, y);
     }
-    if (blueGoal != nullptr)
-    {
-        blueGoal->render(_renderer);
-    }
+    SDL_Rect centerSpot = {cx - 3, cy - 3, 6, 6};
+    SDL_RenderFillRect(_renderer, &centerSpot);
 
-    // Render soccer ball
-    if (ball != nullptr)
+    // Draw goal areas and penalty boxes around each goal line (photo-like layout).
+    if (redGoal != nullptr && blueGoal != nullptr)
     {
-        ball->render(_renderer, 0, 0, 0); // Black ball
+        int leftGoalX = (int)redGoal->getLeftPost().getX();
+        int rightGoalX = (int)blueGoal->getLeftPost().getX();
+
+        int leftGoalTop = std::min((int)redGoal->getLeftPost().getY(), (int)redGoal->getRightPost().getY());
+        int leftGoalBottom = std::max((int)redGoal->getLeftPost().getY(), (int)redGoal->getRightPost().getY());
+        int rightGoalTop = std::min((int)blueGoal->getLeftPost().getY(), (int)blueGoal->getRightPost().getY());
+        int rightGoalBottom = std::max((int)blueGoal->getLeftPost().getY(), (int)blueGoal->getRightPost().getY());
+
+        int penaltyDepth = w / 7;
+        int penaltyHeight = h / 2;
+        int goalBoxDepth = w / 16;
+        int goalBoxHeight = h / 5;
+
+        SDL_Rect leftPenalty = {leftGoalX, cy - penaltyHeight / 2, penaltyDepth, penaltyHeight};
+        SDL_Rect rightPenalty = {rightGoalX - penaltyDepth, cy - penaltyHeight / 2, penaltyDepth, penaltyHeight};
+        SDL_RenderDrawRect(_renderer, &leftPenalty);
+        SDL_RenderDrawRect(_renderer, &rightPenalty);
+
+        SDL_Rect leftGoalBox = {leftGoalX, cy - goalBoxHeight / 2, goalBoxDepth, goalBoxHeight};
+        SDL_Rect rightGoalBox = {rightGoalX - goalBoxDepth, cy - goalBoxHeight / 2, goalBoxDepth, goalBoxHeight};
+        SDL_RenderDrawRect(_renderer, &leftGoalBox);
+        SDL_RenderDrawRect(_renderer, &rightGoalBox);
+
+        // Goal posts/bodies: left is red team side, right is blue team side.
+        SDL_SetRenderDrawColor(_renderer, 220, 60, 60, SDL_ALPHA_OPAQUE);
+        SDL_Rect leftGoalVisual = {leftGoalX - 6, leftGoalTop, 12, std::max(1, leftGoalBottom - leftGoalTop)};
+        SDL_RenderFillRect(_renderer, &leftGoalVisual);
+
+        SDL_SetRenderDrawColor(_renderer, 35, 80, 220, SDL_ALPHA_OPAQUE);
+        SDL_Rect rightGoalVisual = {rightGoalX - 6, rightGoalTop, 12, std::max(1, rightGoalBottom - rightGoalTop)};
+        SDL_RenderFillRect(_renderer, &rightGoalVisual);
+
+        // Back to white for remaining markings.
+        SDL_SetRenderDrawColor(_renderer, 255, 255, 255, SDL_ALPHA_OPAQUE);
     }
 
     // Render red team players
@@ -378,6 +609,15 @@ void clsSoccerPitch::render()
             blueTeam->getGoalKeeper()->render(_renderer);
         }
     }
+
+    // Render soccer ball last so it stays visible above players.
+    if (ball != nullptr)
+    {
+        ball->render(_renderer, 0, 0, 0); // Black ball
+    }
+
+    // Match result HUD at top-center.
+    drawScoreHud(_renderer, static_cast<int>(_width), redScore, blueScore, !_gameOn);
 
     SDL_RenderPresent(_renderer);
 }

@@ -1,6 +1,19 @@
 #include "../include/soccerBall.h"
 #include "../include/playerBase.h"
 #include "../include/math.h"
+#include <cmath>
+
+namespace
+{
+void drawFilledCircle(SDL_Renderer *renderer, int cx, int cy, int radius)
+{
+    for (int dy = -radius; dy <= radius; ++dy)
+    {
+        int span = (int)std::sqrt((double)(radius * radius - dy * dy));
+        SDL_RenderDrawLine(renderer, cx - span, cy + dy, cx + span, cy + dy);
+    }
+}
+}
 
 clsSoccerBall::clsSoccerBall(clsVector2d position, double radius,
                              double ballSize, double mass,
@@ -129,51 +142,41 @@ clsVector2d clsSoccerBall::futurePosition(double time)
 
 void clsSoccerBall::render(SDL_Renderer *renderer, uint8_t r, uint8_t g, uint8_t b)
 {
-    // Validate inputs
+    (void)r;
+    (void)g;
+    (void)b;
+
     if (!renderer || boundingRadius <= 0)
-    {
         return;
-    }
 
-    // Use ball's own position and radius
-    float center_x = (float)position.getX();
-    float center_y = (float)position.getY();
-    float radius = (float)boundingRadius;
+    int cx = (int)position.getX();
+    int cy = (int)position.getY();
+    int radius = (int)(boundingRadius * 1.6);
+    if (radius < 9)
+        radius = 9;
 
-    // Set the drawing color for the circle
-    SDL_SetRenderDrawColor(renderer, r, g, b, SDL_ALPHA_OPAQUE);
+    SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
+    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 75);
+    drawFilledCircle(renderer, cx + 2, cy + 3, radius);
 
-    // Midpoint Circle Algorithm for filled circle using float coordinates
-    float x = radius;
-    float y = 0.0f;
-    float radiusError = 1.0f - x;
+    SDL_SetRenderDrawColor(renderer, 245, 245, 245, SDL_ALPHA_OPAQUE);
+    drawFilledCircle(renderer, cx, cy, radius);
 
-    // The loop calculates one octant and uses symmetry to draw the rest with horizontal lines.
-    while (x >= y)
+    SDL_SetRenderDrawColor(renderer, 20, 20, 20, SDL_ALPHA_OPAQUE);
+    for (int a = 0; a < 360; ++a)
     {
-        // Draw horizontal lines across the circle's width at the current y step.
-        // This process fills the interior of the circle using SDL3's float-based rendering.
-
-        // Top half
-        SDL_RenderDrawLine(renderer, (int)(center_x - x), (int)(center_y - y), (int)(center_x + x), (int)(center_y - y));
-        SDL_RenderDrawLine(renderer, (int)(center_x - y), (int)(center_y - x), (int)(center_x + y), (int)(center_y - x));
-
-        // Bottom half
-        SDL_RenderDrawLine(renderer, (int)(center_x - x), (int)(center_y + y), (int)(center_x + x), (int)(center_y + y));
-        SDL_RenderDrawLine(renderer, (int)(center_x - y), (int)(center_y + x), (int)(center_x + y), (int)(center_y + x));
-
-        // Update the error term to find the next point
-        y++;
-        if (radiusError < 0)
-        {
-            radiusError += 2.0f * y + 1.0f;
-        }
-        else
-        {
-            x--;
-            radiusError += 2.0f * (y - x) + 1.0f;
-        }
+        double rad = a * 0.017453292519943295;
+        int x = cx + (int)(std::cos(rad) * radius);
+        int y = cy + (int)(std::sin(rad) * radius);
+        SDL_RenderDrawPoint(renderer, x, y);
     }
+
+    // Simple black panel pattern for soccer-ball look.
+    drawFilledCircle(renderer, cx, cy, radius / 3);
+    drawFilledCircle(renderer, cx + radius / 2, cy, radius / 4);
+    drawFilledCircle(renderer, cx - radius / 2, cy, radius / 4);
+    drawFilledCircle(renderer, cx, cy + radius / 2, radius / 4);
+    drawFilledCircle(renderer, cx, cy - radius / 2, radius / 4);
 }
 
 double clsSoccerBall::timeToCoverDistance(clsVector2d A, clsVector2d B, double force) const
