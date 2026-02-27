@@ -58,12 +58,6 @@ make
 make run
 ```
 
-## Optional Crowd Audio
-To enable crowd ambience, place a WAV file at:
-
-`audio/crowd.wav`
-
-The game will auto-detect and loop it at runtime.
 
 ## Current Scope
 This repository focuses on simulation architecture, autonomous flow, and readability of game AI behavior. It is intentionally lightweight and suitable as a foundation for:
