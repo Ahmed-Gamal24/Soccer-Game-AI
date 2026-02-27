@@ -45,7 +45,7 @@ int main()
         cout << "SDL_Init failed: " << SDL_GetError() << endl;
         return 1;
     }
-    IMG_Init(IMG_INIT_PNG); 
+    IMG_Init(IMG_INIT_PNG);
 
     int windowWidth = 2000;
     int windowHeight = 1000;
@@ -54,14 +54,13 @@ int main()
     SDL_Renderer *renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
 
     // Create the soccerPitch with renderer
-    clsSoccerPitch soccerPitch(renderer,windowWidth , windowHeight);
+    clsSoccerPitch soccerPitch(renderer, windowWidth, windowHeight);
 
     // Optional looping audience ambience from WAV file.
     LoopingAudioState crowdAudio;
     SDL_AudioDeviceID audioDevice = 0;
     std::vector<std::string> audioPaths = {
-        "audio/crowd.wav"
-    };
+        "audio/crowd.wav"};
 
     SDL_AudioSpec wavSpec;
     Uint8 *wavBuffer = nullptr;
