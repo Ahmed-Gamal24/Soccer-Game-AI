@@ -1,39 +1,70 @@
-# Autonomous Simple Soccer AI Simulation
-This project implements a fully autonomous, competitive 2D soccer simulation based on the design principles outlined in Programming Game AI by Example by Mat Buckland. The core objective is to showcase robust, multi-agent cooperative and antagonistic behavior using a decoupled and scalable C++ architecture.
+# Soccer-Game-AI
+Autonomous 2D top-down soccer simulation built in C++ with SDL2, inspired by the architecture from *Programming Game AI by Example*.
 
-The two opposing teams manage their own strategy, player roles, and movement without any human intervention, providing a compelling demonstration of reactive and goal-oriented artificial intelligence.
+This project demonstrates coordinated multi-agent behavior, team-state logic, ball physics, and a complete playable match loop (kickoff, goals, score tracking, winner detection).
 
-# Screenshots (Match Overview)
-
-![image](screenshots/img1.png)
+## Match Preview
 
 
-# Features and AI Architecture
+## What This Project Demonstrates
+- Autonomous gameplay with no player input required.
+- Team-level and player-level decision flow using finite state machines.
+- Real-time role transitions (chase, support, receive, return home, defend/attack switching).
+- Ball possession and scoring lifecycle (goal detection, reset, kickoff preparation).
+- Visual game presentation with a rendered pitch, team entities, keeper behavior, and top-center HUD scoreboard.
 
-The simulation's intelligence layer is structured using a combination of Finite State Machines (FSMs) and a real-time messaging system to ensure cooperative play.
+## Core Systems
+### AI and Decision Model
+- **Team FSM**: `PrepareForKickOff`, `Attacking`, `Defending`.
+- **Player FSM**: `Wait`, `ReturnToHomeRegion`, `ChaseBall`, `Dribble`, `ReceiveBall`, `SupportAttacker`.
+- **Role selection**: Closest-player-to-ball updates each frame to drive who pressures the ball.
 
-## Tiered Finite State Machines (FSM)
+### Physics and Movement
+- Vector-based movement with steering behaviors (`seek`, `arrive`, `pursuit`).
+- Ball movement with friction and velocity decay.
+- Post-update overlap resolution to prevent players and keepers from visually passing through each other.
 
-The AI is implemented on two hierarchical levels to govern behavior:
+### Match Flow
+- Real-time score tracking (Red vs Blue).
+- Automatic reset after non-winning goals.
+- Game freeze when a team reaches winning score.
+- Winner highlighting in the HUD.
 
-Team Level FSM (Strategic): The SoccerTeam class uses states like Attacking and Defending to define high-level strategy (e.g., controlling player density on the field, assigning home regions).
+### Visual and Audio Layer
+- Procedural pitch rendering (gradient grass, stripes, center line/circle, boxes, goal visuals).
+- Stylized procedural players/keepers/ball for clear tactical readability.
+- Optional looping crowd ambience from WAV file.
 
-Player Level FSM (Tactical): Individual players (FieldPlayer, GoalKeeper) transition through states like ChaseBall, KickBall, ReceiveBall, and SupportAttacker to execute dynamic plays and adapt to the current game state.
+## Project Structure
+```text
+include/   Headers (entities, states, math, FSM, messaging)
+src/       C++ implementation (game loop, pitch, teams, players, ball, rendering)
+imgs/      Optional image assets
+screenshots/
+```
 
-## Event-Driven Communication
+## Build and Run
+### Requirements
+- `g++` with C++17 support
+- SDL2 development libraries
+- SDL2_image development libraries
 
-Agents communicate in real-time using a custom Messaging System (Telegram objects) to coordinate complex actions:
+### Commands
+```bash
+make
+make run
+```
 
-A player successfully gaining possession may send a Msg_SupportAttacker message to the entire team.
+## Optional Crowd Audio
+To enable crowd ambience, place a WAV file at:
 
-The system uses the message type Msg_ReceiveBall to notify a specific player where and when to intercept a pass, allowing for dynamic ball control.
+`audio/crowd.wav`
 
-## Core Technical Capabilities
+The game will auto-detect and loop it at runtime.
 
-The players leverage precise vector mathematics and physics simulations for effective movement:
-
-Kinematics: The SoccerBall accurately models movement using physics equations for constant deceleration (friction) to determine realistic ball trajectories.
-
-Tactical Geometry: Players employ complex geometry checks (CanShoot, isPassSafeFromAllOpponents) to evaluate the safety of a shot or pass against opponent interception ranges before executing a move.
-
-Autonomous Locomotion: Agent movement is managed using Steering Behaviors (Seek, Arrive, Pursuit) for smooth path following and dynamic target interception.
+## Current Scope
+This repository focuses on simulation architecture, autonomous flow, and readability of game AI behavior. It is intentionally lightweight and suitable as a foundation for:
+- richer tactical logic,
+- stronger passing/shooting heuristics,
+- animation and polish,
+- and deeper match analytics.
