@@ -5,6 +5,9 @@ This project demonstrates coordinated multi-agent behavior, team-state logic, ba
 
 ## Match Preview
 
+https://github.com/user-attachments/assets/3701d5b8-477b-4c7f-b7d7-349dea2c2631
+
+
 
 ## What This Project Demonstrates
 - Autonomous gameplay with no player input required.
