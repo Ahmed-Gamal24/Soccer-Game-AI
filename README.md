@@ -5,10 +5,7 @@ This project demonstrates coordinated multi-agent behavior, team-state logic, ba
 
 ## Match Preview
 
-<a href="https://drive.google.com/file/d/1vxpy2knzvc2yXioUR9FRHnO34jBRNVp5/view">
-  <img src="https://github.com/user-attachments/assets/7ec70c56-8fc5-41d8-8180-f881dbd183d5" width="600">
-</a>
-
+[![Watch Video]](https://drive.google.com/file/d/1vxpy2knzvc2yXioUR9FRHnO34jBRNVp5/view)
 
 
 
